@@ -1,0 +1,46 @@
+JobName: test job
+Runs: 1
+RunInterval: 3s
+Tags: [test, csv]
+TestDescriptors:
+    - TargetManagerName: TargetList
+      TargetManagerAcquireParameters:
+          Targets:
+              - Name: target1234
+                ID: "10"
+              - Name: target5678
+                ID: "15"
+      TargetManagerReleaseParameters:
+      TestFetcherName: literal
+      TestFetcherFetchParameters:
+          TestName: literal test
+          Steps:
+              - name: cmd
+                label: Step 0
+                parameters:
+                    executable: [echo]
+                    args: ["-n", "foo {{ .ID }} {{ .Name }}"]
+                    emit_stdout: [true]
+                    emit_stderr: [true]
+              - name: cmd
+                label: Step 1
+                parameters:
+                    executable: [sleep]
+                    args: [ "{{ .ID }}" ]
+                    emit_stdout: [true]
+                    emit_stderr: [true]
+              - name: cmd
+                label: Step 2
+                parameters:
+                    executable: [echo]
+                    args: ["-n", "bar {{ .ID }} {{ .Name }}"]
+                    emit_stdout: [true]
+                    emit_stderr: [true]
+Reporting:
+    RunReporters:
+        - name: TargetSuccess
+          parameters:
+              SuccessExpression: ">80%"
+        - name: noop
+    FinalReporters:
+        - name: noop

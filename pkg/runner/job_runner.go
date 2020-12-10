@@ -159,11 +159,11 @@ func (jr *JobRunner) Run(j *job.Job) ([][]*job.Report, []*job.Report, error) {
 							jobLog.Warningf("Failed to unlock targets (%v) for job ID %d: %v", targets, j.ID, err)
 						}
 						return
-					case <-j.PauseCh:
-						// do not unlock targets, we can resume later, or let
-						// them expire
-						jobLog.Debugf("Received pause request, NOT releasing targets so the job can be resumed")
-						return
+					//case <-j.PauseCh:
+					// do not unlock targets, we can resume later, or let
+					// them expire
+					//jobLog.Debugf("Received pause request, NOT releasing targets so the job can be resumed")
+					//return
 					case <-done:
 						if err := tl.Unlock(j.ID, targets); err != nil {
 							jobLog.Warningf("Failed to unlock %d target(s) (%v): %v", len(targets), targets, err)
@@ -186,8 +186,16 @@ func (jr *JobRunner) Run(j *job.Job) ([][]*job.Report, []*job.Report, error) {
 
 			if runErr = jr.emitAcquiredTargets(testEventEmitter, targets); runErr == nil {
 				jobLog.Infof("Run #%d: running test #%d for job '%s' (job ID: %d) on %d targets", run+1, idx, j.Name, j.ID, len(targets))
-				testRunner := NewTestRunner()
-				runErr = testRunner.Run(j.CancelCh, j.PauseCh, t, targets, j.ID, types.RunID(run+1))
+				testRunner := NewTestRunner2()
+				var resumeState []byte
+				// resumeState = []byte(``)
+				// resumeState = []byte(`{"Target{Name: \"target1234\", ID: \"10\", FQDN: \"\"}":{"cur_step":2,"cur_phase":0,"res":null},"Target{Name: \"target5678\", ID: \"15\", FQDN: \"\"}":{"cur_step":2,"cur_phase":0,"res":null}}`)
+				resumeState, err := testRunner.Run(j.CancelCh, j.PauseCh, t, targets, j.ID, types.RunID(run+1), resumeState)
+				if err == ErrPaused {
+					jobLog.Debugf("runner paused, state: %s", string(resumeState))
+				} else {
+					runErr = err
+				}
 			}
 
 			// Job is done, release all the targets

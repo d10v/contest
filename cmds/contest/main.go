@@ -37,6 +37,7 @@ var (
 
 func main() {
 	flag.Parse()
+	logging.Debug()
 	log := logging.GetLogger("contest")
 	log.Level = logrus.DebugLevel
 

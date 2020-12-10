@@ -159,8 +159,8 @@ func (ts *Cmd) Run(cancel, pause <-chan struct{}, ch test.TestStepChannels, para
 			return err
 		case <-cancel:
 			return nil
-		case <-pause:
-			return nil
+			//case <-pause:
+			//	return nil
 		}
 	}
 	return teststeps.ForEachTarget(Name, cancel, pause, ch, f)

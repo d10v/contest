@@ -60,6 +60,7 @@ func ForEachTarget(pluginName string, cancel, pause <-chan struct{}, ch test.Tes
 				return
 			case <-pause:
 				log.Debugf("%s: ForEachTarget: incoming loop paused", pluginName)
+				noMoreTargetsCh <- struct{}{}
 				return
 			}
 
@@ -83,9 +84,9 @@ func ForEachTarget(pluginName string, cancel, pause <-chan struct{}, ch test.Tes
 					case <-cancel:
 						log.Debugf("%s: ForEachTarget: received cancellation signal while reporting error", pluginName)
 						reportResults = false
-					case <-pause:
-						log.Debugf("%s: ForEachTarget: received pausing signal while reporting error", pluginName)
-						reportResults = false
+						//case <-pause:
+						//log.Debugf("%s: ForEachTarget: received pausing signal while reporting error", pluginName)
+						//reportResults = false
 					}
 				} else {
 					log.Debugf("%s: ForEachTarget: target %s completed successfully", pluginName, te.target)
@@ -94,9 +95,9 @@ func ForEachTarget(pluginName string, cancel, pause <-chan struct{}, ch test.Tes
 					case <-cancel:
 						log.Debugf("%s: ForEachTarget: received cancellation signal while reporting success", pluginName)
 						reportResults = false
-					case <-pause:
-						log.Debugf("%s: ForEachTarget: received pausing signal while reporting success", pluginName)
-						reportResults = false
+						//case <-pause:
+						//log.Debugf("%s: ForEachTarget: received pausing signal while reporting success", pluginName)
+						//reportResults = false
 					}
 				}
 			} else {
@@ -114,9 +115,10 @@ func ForEachTarget(pluginName string, cancel, pause <-chan struct{}, ch test.Tes
 		case <-cancel:
 			log.Debugf("%s: ForEachTarget: received cancellation signal while waiting for results", pluginName)
 			reportResults = false
-		case <-pause:
-			log.Debugf("%s: ForEachTarget: received pausing signal while waiting for results", pluginName)
-			reportResults = false
+
+			//case <-pause:
+			//log.Debugf("%s: ForEachTarget: received pausing signal while waiting for results", pluginName)
+			//reportResults = false
 		}
 	}
 }
